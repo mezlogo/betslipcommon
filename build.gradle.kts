@@ -10,7 +10,7 @@ repositories {
 version = "0.0.1"
 
 kotlin {
-    js {
+    js(IR) {
         browser()
         binaries.executable()
     }

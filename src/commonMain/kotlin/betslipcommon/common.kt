@@ -1,12 +1,13 @@
+@file:JsExport
+
 package betslipcommon
 
-expect annotation class CommonJsExport()
+import kotlin.js.JsExport
 
-@CommonJsExport
 data class ResponseDataClass(val msg: String, val code: Int)
 
-@CommonJsExport
-interface Callback { fun onCall(msg: String) : String }
+interface Callback {
+    fun onCall(msg: String): String
+}
 
-@CommonJsExport
 fun commonCode(callback: Callback) = ResponseDataClass(callback.onCall("fromCommon"), 2)
