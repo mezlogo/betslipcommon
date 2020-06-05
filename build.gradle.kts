@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.4-M1"
+    kotlin("multiplatform") version "1.4-M2"
 }
 repositories {
     mavenCentral()
@@ -7,12 +7,12 @@ repositories {
     maven ("https://kotlin.bintray.com/kotlinx")
 }
 
-version = "2.1.2"
+version = "0.0.1"
 
 kotlin {
     js {
         browser()
-        produceExecutable()
+        binaries.executable()
     }
     jvm()
     sourceSets {

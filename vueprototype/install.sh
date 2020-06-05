@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-version="1.4.0-M1"
+version="1.4.0-M2"
 bscommon_js="$DIR/../betslipcommon/build/js"
 kotlin_dist_dir="$bscommon_js/packages_imported"
 bscommon_dist_dir="$bscommon_js/packages"
