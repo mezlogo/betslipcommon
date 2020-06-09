@@ -4,34 +4,40 @@ package betslipcommon
 
 import kotlin.js.JsExport
 
+data class Fraction(val numerator: Long, val denumerator: Long)
 data class SelectionRef(val eventId: Long, val selectionUid: String)
-data class Choice(val selectionRef: SelectionRef, val coeffId: Long)
-data class Stake(val value: Long)
-data class SingleBet(var stake: Stake, var minStake: Stake, var maxStake: Stake)
+data class Choice(val selectionRef: SelectionRef, var coeffId: Long, var coeff: Fraction)
+data class Stake(val value: Long) {
+    fun add(stake: Stake) = Stake(value + stake.value)
+}
+data class Bet(var stake: Stake, var minStake: Stake, var maxStake: Stake)
+data class SingleBet(val choice: Choice, val bet: Bet, var potentialReturns: Stake = Stake(0))
 enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR}
 data class PlaceBetResponse(val status: PlaceBetStatus)
 
 interface BetslipApi {
     fun addRmChoice(clickedChoice: Choice)
-    fun setStake(selectionRef: SelectionRef, stake: Stake)
+    fun setStake(selectionRef: SelectionRef, stakeAsString: String)
     fun placeBet()
 }
 
 interface BetslipStorageSpi {
     fun getSelectedChoices(): List<Choice>
     fun addChoice(clickedChoice: Choice, singleBet: SingleBet)
-    fun findSingleBet(selectionRef: SelectionRef): SingleBet?
-    fun setSingleBet(selectionRef: SelectionRef, singleBet: SingleBet)
+    fun saveNewSingleBet(singleBet: SingleBet, totalStake: Stake, totalReturns: Stake)
     fun getSingleBets(): List<SingleBet>
     fun betIsPlacedSuccessfully()
 }
 
 interface BetslipAoSpi {
-    fun addChoice(selectedChoices: List<Choice>, clickedChoice: Choice): SingleBet
-    fun placeBet(singleBets: List<SingleBet>) : PlaceBetResponse
+    fun addChoice(selectedChoices: List<Choice>, clickedChoice: Choice): Bet
+    fun placeSingleBets(bets: List<SingleBet>) : PlaceBetResponse
 }
 
 class BetslipApiCommon(val storageSpi: BetslipStorageSpi, val aoSpi: BetslipAoSpi) : BetslipApi {
+    private fun validateStake(stakeAsString: String) = Stake(stakeAsString.toLong())
+    private fun calcReturns(stake: Stake, coeff: Fraction) = Stake(stake.value * coeff.numerator / coeff.denumerator)
+
     override fun addRmChoice(clickedChoice: Choice) {
         val selectedChoices = storageSpi.getSelectedChoices()
 
@@ -43,31 +49,42 @@ class BetslipApiCommon(val storageSpi: BetslipStorageSpi, val aoSpi: BetslipAoSp
             return
         }
 
-        val singleBet = aoSpi.addChoice(selectedChoices, clickedChoice)
+        val bet = aoSpi.addChoice(selectedChoices, clickedChoice)
 
-        storageSpi.addChoice(clickedChoice, singleBet)
+        storageSpi.addChoice(clickedChoice, SingleBet(clickedChoice, bet))
     }
 
-    override fun setStake(selectionRef: SelectionRef, stake: Stake) {
-        val singleBet = storageSpi.findSingleBet(selectionRef)
+    override fun setStake(selectionRef: SelectionRef, stakeAsString: String) {
+        val stake = validateStake(stakeAsString)
+        val singleBets = storageSpi.getSingleBets()
+
+        val singleBet = singleBets.firstOrNull { it.choice.selectionRef == selectionRef }
 
         if (null == singleBet) {
             return
         }
 
-        storageSpi.setSingleBet(selectionRef, singleBet)
+        singleBet.bet.stake = stake
+        singleBet.potentialReturns = calcReturns(stake, singleBet.choice.coeff)
+
+        val otherSingleBets = singleBets.filter { it.choice.selectionRef != selectionRef }
+
+        val totalStake = otherSingleBets.map { it.bet.stake }.reduce { l, r -> l.add(r) }
+        val totalReturns = otherSingleBets.map { calcReturns(it.bet.stake, it.choice.coeff) }.reduce { l, r -> l.add(r) }
+
+        storageSpi.saveNewSingleBet(singleBet, totalStake.add(stake), totalReturns.add(singleBet.potentialReturns))
     }
 
     override fun placeBet() {
         val singleBets = storageSpi.getSingleBets()
 
-        val singleBetsWithStake = singleBets.filter { 0 < it.stake.value }
+        val singleBetsWithStake = singleBets.filter { 0 < it.bet.stake.value }
 
         if (singleBetsWithStake.isEmpty()) {
             return
         }
 
-        val placeBetResponse = aoSpi.placeBet(singleBets)
+        val placeBetResponse = aoSpi.placeSingleBets(singleBets)
 
         when (placeBetResponse.status) {
             PlaceBetStatus.OK -> storageSpi.betIsPlacedSuccessfully()
