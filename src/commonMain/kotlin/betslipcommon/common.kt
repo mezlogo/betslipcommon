@@ -7,11 +7,11 @@ import kotlin.js.JsExport
 data class Fraction(val numerator: Long, val denumerator: Long)
 data class SelectionRef(val eventId: Long, val selectionUid: String)
 data class Choice(val selectionRef: SelectionRef, var coeffId: Long, var coeff: Fraction)
-data class Stake(val value: Long) {
+data class Stake(val value: Float) {
     fun add(stake: Stake) = Stake(value + stake.value)
 }
 data class Bet(var stake: Stake, var minStake: Stake, var maxStake: Stake)
-data class SingleBet(val choice: Choice, val bet: Bet, var potentialReturns: Stake = Stake(0))
+data class SingleBet(val choice: Choice, val bet: Bet, var potentialReturns: Stake = Stake(0f))
 enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR}
 data class PlaceBetResponse(val status: PlaceBetStatus)
 
@@ -35,7 +35,7 @@ interface BetslipAoSpi {
 }
 
 class BetslipApiCommon(val storageSpi: BetslipStorageSpi, val aoSpi: BetslipAoSpi) : BetslipApi {
-    private fun validateStake(stakeAsString: String) = Stake(stakeAsString.toLong())
+    private fun validateStake(stakeAsString: String) = Stake(stakeAsString.toFloat())
     private fun calcReturns(stake: Stake, coeff: Fraction) = Stake(stake.value * coeff.numerator / coeff.denumerator)
 
     override fun addRmChoice(clickedChoice: Choice) {
