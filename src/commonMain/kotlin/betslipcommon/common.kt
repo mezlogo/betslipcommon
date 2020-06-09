@@ -15,7 +15,7 @@ data class SingleBet(val choice: Choice, val bet: Bet, var potentialReturns: Sta
 enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR}
 data class PlaceBetResponse(val status: PlaceBetStatus)
 
-interface BetslipApi {
+interface BetslipModel {
     fun addRmChoice(clickedChoice: Choice)
     fun setStake(selectionRef: SelectionRef, stakeAsString: String)
     fun placeBet()
@@ -34,7 +34,7 @@ interface BetslipAoSpi {
     fun placeSingleBets(bets: List<SingleBet>) : PlaceBetResponse
 }
 
-class BetslipApiCommon(val storageSpi: BetslipStorageSpi, val aoSpi: BetslipAoSpi) : BetslipApi {
+class BetslipModelCommon(val storageSpi: BetslipStorageSpi, val aoSpi: BetslipAoSpi) : BetslipModel {
     private fun validateStake(stakeAsString: String) = Stake(stakeAsString.toFloat())
     private fun calcReturns(stake: Stake, coeff: Fraction) = Stake(stake.value * coeff.numerator / coeff.denumerator)
 
