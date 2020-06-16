@@ -7,6 +7,7 @@ data class ClientBet(val stake: Float)
 class EmptyTicket() : Ticket {
     override fun getChoices() = emptyList<Choice>()
     override fun getBets() = emptyList<Bet>()
+    override fun place() { }
 }
 
 class BetslipModelClientSample(private val betslipModel: BetslipModel) {
