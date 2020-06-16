@@ -4,21 +4,21 @@ data class ClientChoice(val eventId: Long, val selectionUid: String, val coeffId
 data class ClientSingleBet(val choice: ClientChoice, val stake: Float)
 data class ClientBet(val stake: Float)
 
-class EmptyBetslipTicket() : BetslipTicket {
+class EmptyTicket() : Ticket {
     override fun getChoices() = emptyList<Choice>()
     override fun getBets() = emptyList<Bet>()
 }
 
 class BetslipModelClientSample(private val betslipModel: BetslipModel) {
-    private var betslipTicket: BetslipTicket = EmptyBetslipTicket()
+    private var ticket: Ticket = EmptyTicket()
     private var currentMode = BetslipMode.SINGLES
 
     fun toBetslipModelSelectionRef(clientRef: String) = SelectionRef(10L, "Result.1")
 
     fun toBetslipModelChoice(clientChoice: ClientChoice) = Choice(SelectionRef(clientChoice.eventId, clientChoice.selectionUid),
-            clientChoice.coeffId, Fraction(clientChoice.num, clientChoice.denum))
+            Coeffiicient(clientChoice.coeffId, Fraction(clientChoice.num, clientChoice.denum)))
 
-    fun toClientChoice(choice: Choice) = ClientChoice(choice.selectionRef.eventId, choice.selectionRef.selectionUid, choice.coeffId, choice.coeff.numerator, choice.coeff.denumerator)
+    fun toClientChoice(choice: Choice) = ClientChoice(choice.selectionRef.eventId, choice.selectionRef.selectionUid, choice.coeff.coeffId, choice.coeff.value.numerator, choice.coeff.value.denumerator)
 
     fun onAddChoice(clientChoice: ClientChoice): Boolean {
         val choice = toBetslipModelChoice(clientChoice)
@@ -31,7 +31,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
         val availableModes = betslipModel.getAvailableModes()
 
         this.currentMode = if (availableModes.contains(this.currentMode)) this.currentMode else BetslipMode.SINGLES
-        this.betslipTicket = betslipModel.getTicket(currentMode)
+        this.ticket = betslipModel.getTicket(currentMode)
         renderBetslip()
         return true
     }
@@ -50,10 +50,10 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
         this.currentMode = if (availableModes.contains(this.currentMode)) this.currentMode else BetslipMode.SINGLES
 
         if (availableModes.contains(currentMode)) {
-            this.betslipTicket = betslipModel.getTicket(currentMode)
+            this.ticket = betslipModel.getTicket(currentMode)
             renderBetslip()
         } else {
-            this.betslipTicket = EmptyBetslipTicket()
+            this.ticket = EmptyTicket()
             renderEmptyMode()
         }
         return true
@@ -64,7 +64,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
 
         if (availableModes.contains(mode) && mode != this.currentMode) {
             this.currentMode = mode
-            this.betslipTicket = betslipModel.getTicket(mode)
+            this.ticket = betslipModel.getTicket(mode)
             renderBetslip()
             return true
         } else {
@@ -77,7 +77,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
             return false
         }
 
-        val singleBetslipTicket = betslipTicket as SingleBetslipTicket
+        val singleBetslipTicket = ticket as SingleTicket
         return singleBetslipTicket.setStake(toBetslipModelSelectionRef(ref), Stake(stake))
     }
 
@@ -86,23 +86,22 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
             return false
         }
 
-        val complexBetslipTicket = betslipTicket as ComplexBetslipTicket
+        val complexBetslipTicket = ticket as ComplexTicket
         return complexBetslipTicket.setStake(betType, Stake(stake))
     }
 
     fun onPlaceTickets() {
-        val betsWithNotEmptyStake = this.betslipTicket!!.getBets().filter { 0f < it.getStake().value }
-        betslipModel.placeBets(betsWithNotEmptyStake)
+        this.ticket?.place()
     }
 
     private fun renderBetslip() = when (currentMode) {
-        BetslipMode.SINGLES -> renderSingleMode(this.betslipTicket as SingleBetslipTicket)
-        BetslipMode.ACCUMULATORS -> renderAccumMode(this.betslipTicket as ComplexBetslipTicket)
-        BetslipMode.MULTIPLES -> renderMultipleMode(this.betslipTicket as ComplexBetslipTicket)
-        BetslipMode.ANTIEXPRESSES -> renderAntiexpressMode(this.betslipTicket as ComplexBetslipTicket)
+        BetslipMode.SINGLES -> renderSingleMode(this.ticket as SingleTicket)
+        BetslipMode.ACCUMULATORS -> renderAccumMode(this.ticket as ComplexTicket)
+        BetslipMode.MULTIPLES -> renderMultipleMode(this.ticket as ComplexTicket)
+        BetslipMode.ANTIEXPRESSES -> renderAntiexpressMode(this.ticket as ComplexTicket)
     }
 
-    private fun renderSingleMode(singleBetslipTicket: SingleBetslipTicket): Map<String, Any> {
+    private fun renderSingleMode(singleBetslipTicket: SingleTicket): Map<String, Any> {
         val singleBets = singleBetslipTicket.getBets().map {
             ClientSingleBet(toClientChoice(it.getChoices().first()), it.getStake().value)
         }
@@ -113,7 +112,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
     }
 
     //Right now there is no difference between multiple, accum and AE renders
-    private fun renderAccumMode(complexBetslipTicket: ComplexBetslipTicket): Map<String, Any> {
+    private fun renderAccumMode(complexBetslipTicket: ComplexTicket): Map<String, Any> {
         val bets = complexBetslipTicket.getBets().map { ClientBet(it.getStake().value) }
         val choices = complexBetslipTicket.getChoices().map { toClientChoice(it) }
         return mapOf(
@@ -122,7 +121,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
                 Pair("choices", choices)
         )
     }
-    private fun renderAntiexpressMode(complexBetslipTicket: ComplexBetslipTicket): Map<String, Any> {
+    private fun renderAntiexpressMode(complexBetslipTicket: ComplexTicket): Map<String, Any> {
         val bets = complexBetslipTicket.getBets().map { ClientBet(it.getStake().value) }
         val choices = complexBetslipTicket.getChoices().map { toClientChoice(it) }
         return mapOf(
@@ -131,7 +130,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
                 Pair("choices", choices)
         )
     }
-    private fun renderMultipleMode(complexBetslipTicket: ComplexBetslipTicket): Map<String, Any> {
+    private fun renderMultipleMode(complexBetslipTicket: ComplexTicket): Map<String, Any> {
         val bets = complexBetslipTicket.getBets().map { ClientBet(it.getStake().value) }
         val choices = complexBetslipTicket.getChoices().map { toClientChoice(it) }
         return mapOf(

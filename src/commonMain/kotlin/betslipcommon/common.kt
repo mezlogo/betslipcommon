@@ -8,7 +8,8 @@ enum class BetType { SINGLE, ANTIEXPRESS, DOUBLE, DOUBLES, TREBLE, ACCUMULATOR, 
 enum class BetslipMode { SINGLES, ACCUMULATORS, ANTIEXPRESSES, MULTIPLES }
 data class Fraction(val numerator: Long, val denumerator: Long)
 data class SelectionRef(val eventId: Long, val selectionUid: String)
-data class Choice(val selectionRef: SelectionRef, var coeffId: Long, var coeff: Fraction)
+data class Coeffiicient(val coeffId: Long, val value: Fraction)
+data class Choice(val selectionRef: SelectionRef, var coeff: Coeffiicient)
 data class Stake(val value: Float)
 
 interface Bet {
@@ -20,23 +21,24 @@ interface Bet {
     fun getMax(): Stake
 }
 
-interface BetslipTicket {
-    fun getChoices(): List<Choice>
+interface Ticket {
+    fun getChoices() = getBets().asSequence().flatMap { it.getChoices().asSequence() }.distinct().toList()
     fun getBets(): List<Bet>
+    fun place()
 }
 
-interface SingleBetslipTicket: BetslipTicket {
+interface SingleTicket: Ticket {
     fun setStake(selectionRef: SelectionRef, stake: Stake): Boolean
 }
 
-interface ComplexBetslipTicket: BetslipTicket {
+interface ComplexTicket: Ticket {
     fun setStake(betType: BetType, stake: Stake): Boolean
 }
 
 interface BetslipModel {
     fun addChoice(choice: Choice): Boolean
     fun removeChoice(selectionRef: SelectionRef): Boolean
-    fun getTicket(mode: BetslipMode): BetslipTicket
+    fun getTicket(mode: BetslipMode): Ticket
     fun getAvailableModes(): List<BetslipMode>
     fun placeBets(bets: List<Bet>)
 }
