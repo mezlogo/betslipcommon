@@ -21,10 +21,16 @@ interface Bet {
     fun getMax(): Stake
 }
 
+enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR }
+interface PlaceBetResult { fun getStatus(): PlaceBetStatus }
+interface LiveDelayResult: PlaceBetResult { fun getTicket(): String; fun getDelayTimer(): Int }
+enum class ErrorType { JUST_SHOW_ERROR_MESSAGE, OFFER_AMEND_STAKE, OFFER_ACCEPT_NEW_TERMS }
+interface ErrorResutl: PlaceBetResult { fun getErrorType(): ErrorType }
+
 interface Ticket {
     fun getChoices() = getBets().asSequence().flatMap { it.getChoices().asSequence() }.distinct().toList()
     fun getBets(): List<Bet>
-    fun place()
+    fun place(): PlaceBetResult
 }
 
 interface SingleTicket: Ticket {
@@ -40,5 +46,4 @@ interface BetslipModel {
     fun removeChoice(selectionRef: SelectionRef): Boolean
     fun getTicket(mode: BetslipMode): Ticket
     fun getAvailableModes(): List<BetslipMode>
-    fun placeBets(bets: List<Bet>)
 }
