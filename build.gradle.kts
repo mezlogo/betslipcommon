@@ -11,7 +11,7 @@ version = "0.0.1"
 
 kotlin {
     js(IR) {
-        browser()
+        nodejs()
         binaries.executable()
     }
     jvm()

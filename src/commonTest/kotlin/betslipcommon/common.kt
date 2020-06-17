@@ -92,7 +92,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
     }
 
     fun onPlaceTickets() {
-        this.ticket?.place()
+        this.ticket.place()
     }
 
     private fun renderBetslip() = when (currentMode) {
