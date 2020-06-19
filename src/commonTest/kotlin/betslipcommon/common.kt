@@ -15,7 +15,7 @@ object Bundle {
     val LIVE_DELAY_MSG = "plz, wait"
 }
 
-class BetslipModelClientSample(private val betslipModel: BetslipModel, private val liveDelayCallback: (Int, String) -> Unit) {
+class BetslipModelClientSample(private val betslipModel: BetslipModel) {
     var isRetainEnabled: Boolean = false
 
     private var ticket: Ticket = EmptyTicket()
@@ -104,13 +104,11 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel, private v
 
     private fun handlePlace(placeBetResult: PlaceBetResult) = when (placeBetResult.getStatus()) {
         PlaceBetStatus.OK -> showSuccessfullyPlacedMessage(placeBetResult as SuccessfullyPlacedResult)
-        PlaceBetStatus.LIVE_DELAY -> showLiveDelayMessage(placeBetResult as LiveDelayResult)
+        PlaceBetStatus.LIVE_DELAY -> showLiveDelayMessage(placeBetResult)
         PlaceBetStatus.ERROR -> showErrorPlacedMessage(placeBetResult as ErrorResult)
     }
 
-    private fun showLiveDelayMessage(placeBetResult: LiveDelayResult): Map<String, Any> {
-        liveDelayCallback(placeBetResult.getDelayTimer(), placeBetResult.getTicketUid())
-
+    private fun showLiveDelayMessage(placeBetResult: PlaceBetResult): Map<String, Any> {
         return mapOf(
                 Pair("type", placeBetResult.getStatus()),
                 Pair("msg", Bundle.LIVE_DELAY_MSG),
@@ -128,7 +126,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel, private v
     private fun showSuccessfullyPlacedMessage(placeBetResult: SuccessfullyPlacedResult): Map<String, Any> {
         val choices = ticket.getChoices()
 
-        betslipModel.clear()
+        betslipModel.removeAllChoices()
 
         if (isRetainEnabled) {
             betslipModel.initBetslip(choices)
