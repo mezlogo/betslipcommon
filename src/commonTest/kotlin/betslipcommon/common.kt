@@ -7,10 +7,17 @@ data class ClientBet(val stake: Float)
 class EmptyTicket() : Ticket {
     override fun getChoices() = emptyList<Choice>()
     override fun getBets() = emptyList<Bet>()
-    override fun place() { }
+    override fun place(): PlaceBetResult = throw UnsupportedOperationException()
 }
 
-class BetslipModelClientSample(private val betslipModel: BetslipModel) {
+object Bundle {
+    val SUCCESSFULLY_PLACED_MSG = "congrats"
+    val LIVE_DELAY_MSG = "plz, wait"
+}
+
+class BetslipModelClientSample(private val betslipModel: BetslipModel, private val liveDelayCallback: (Int, String) -> Unit) {
+    var isRetainEnabled: Boolean = false
+
     private var ticket: Ticket = EmptyTicket()
     private var currentMode = BetslipMode.SINGLES
 
@@ -91,8 +98,47 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
         return complexBetslipTicket.setStake(betType, Stake(stake))
     }
 
-    fun onPlaceTickets() {
-        this.ticket.place()
+    fun onPlaceTickets() = handlePlace(this.ticket.place())
+
+    fun onLiveDelayResult(placeBetResult: PlaceBetResult) = handlePlace(placeBetResult)
+
+    private fun handlePlace(placeBetResult: PlaceBetResult) = when (placeBetResult.getStatus()) {
+        PlaceBetStatus.OK -> showSuccessfullyPlacedMessage(placeBetResult as SuccessfullyPlacedResult)
+        PlaceBetStatus.LIVE_DELAY -> showLiveDelayMessage(placeBetResult as LiveDelayResult)
+        PlaceBetStatus.ERROR -> showErrorPlacedMessage(placeBetResult as ErrorResult)
+    }
+
+    private fun showLiveDelayMessage(placeBetResult: LiveDelayResult): Map<String, Any> {
+        liveDelayCallback(placeBetResult.getDelayTimer(), placeBetResult.getTicketUid())
+
+        return mapOf(
+                Pair("type", placeBetResult.getStatus()),
+                Pair("msg", Bundle.LIVE_DELAY_MSG),
+        )
+    }
+
+    private fun showErrorPlacedMessage(placeBetResult: ErrorResult): Map<String, Any> {
+        return mapOf(
+                Pair("type", placeBetResult.getStatus()),
+                Pair("errorType", placeBetResult.getErrorType()),
+                Pair("errorMsg", placeBetResult.getErrorMsg()),
+        )
+    }
+
+    private fun showSuccessfullyPlacedMessage(placeBetResult: SuccessfullyPlacedResult): Map<String, Any> {
+        val choices = ticket.getChoices()
+
+        betslipModel.clear()
+
+        if (isRetainEnabled) {
+            betslipModel.initBetslip(choices)
+        }
+
+        return mapOf(
+                Pair("type", placeBetResult.getStatus()),
+                Pair("msg", Bundle.SUCCESSFULLY_PLACED_MSG),
+                Pair("printBetId", placeBetResult.getBetIdForPrint()),
+        )
     }
 
     private fun renderBetslip() = when (currentMode) {
