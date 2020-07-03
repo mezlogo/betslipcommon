@@ -15,7 +15,7 @@ object Bundle {
     val LIVE_DELAY_MSG = "plz, wait"
 }
 
-class BetslipModelClientSample(private val betslipModel: BetslipModel) {
+class BetslipModelClientSample(private val betslipModel: BetslipModelCommonImpl) {
     var isRetainEnabled: Boolean = false
 
     private var ticket: Ticket = EmptyTicket()
@@ -28,7 +28,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
 
     fun toClientChoice(choice: Choice) = ClientChoice(choice.selectionRef.eventId, choice.selectionRef.selectionUid, choice.coeff.coeffId, choice.coeff.value.numerator, choice.coeff.value.denumerator)
 
-    fun onAddChoice(clientChoice: ClientChoice): Boolean {
+    suspend fun onAddChoice(clientChoice: ClientChoice): Boolean {
         val choice = toBetslipModelChoice(clientChoice)
         val isAdded = betslipModel.addChoice(choice)
 
@@ -44,7 +44,7 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
         return true
     }
 
-    fun onRemoveChoice(clientRef: String): Boolean {
+    suspend fun onRemoveChoice(clientRef: String): Boolean {
         val selectionRef = toBetslipModelSelectionRef(clientRef)
 
         val isRemoved = this.betslipModel.removeChoice(selectionRef)
@@ -127,10 +127,6 @@ class BetslipModelClientSample(private val betslipModel: BetslipModel) {
         val choices = ticket.getChoices()
 
         betslipModel.removeAllChoices()
-
-        if (isRetainEnabled) {
-            betslipModel.initBetslip(choices)
-        }
 
         return mapOf(
                 Pair("type", placeBetResult.getStatus()),
