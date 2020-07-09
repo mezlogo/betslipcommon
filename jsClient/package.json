@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "name": "jsclient",
+  "version": "1.0.0",
+  "dependencies": {
+    "betslipcommon": "file:../build/js/packages/betslipcommon"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.0.0",
+    "typescript": "^3.9.6",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
+  },
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack --watch",
+    "run": "node dist/bundle.js"
+  }
+}

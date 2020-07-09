@@ -2,7 +2,9 @@ export type Nullable<T> = T | null | undefined
 export namespace kotlin {
     type Long = number
     namespace collections {
-        type List<T> = T[]
+        interface List<T> {
+            toArray(): T[]
+        }
     }
     namespace js {
         type Promise<T> = any
@@ -96,14 +98,7 @@ export namespace betslipcommon {
         setStake(betType: any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/, stake: betslipcommon.Stake): boolean
     }
     interface BetslipModel {
-        getTicket(mode: any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/): betslipcommon.Ticket
-        getAvailableModes(): kotlin.collections.List<any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/>
-        removeAllChoices(): void
-    }
-    class BetslipModelCommonImpl implements betslipcommon.BetslipModel {
-        constructor()
-        /* ErrorDeclaration: Suspend function */
-        /* ErrorDeclaration: Suspend function */
+        getCurrentMode(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
         getTicket(mode: any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/): betslipcommon.Ticket
         getAvailableModes(): kotlin.collections.List<any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/>
         removeAllChoices(): void
@@ -131,6 +126,7 @@ export namespace betslipcommon {
 export namespace betslipcommon {
     class BetslipModelJs implements betslipcommon.BetslipModel {
         constructor()
+        getCurrentMode(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
         getAvailableModes(): kotlin.collections.List<any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/>
         getTicket(mode: any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/): betslipcommon.Ticket
         removeAllChoices(): void

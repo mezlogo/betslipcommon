@@ -4,26 +4,55 @@ import kotlinx.coroutines.delay
 
 private fun lg(msg: String) = println("kmp: $msg")
 
+class BetDummy(private val choices: List<Choice>,
+               private val betType: BetType,
+               private var stake: Stake,
+               private var min: Stake,
+               private var max: Stake) : Bet {
+    override fun getChoices() = choices
+
+    override fun getBetType() = betType
+
+    override fun getStake() = stake
+
+    override fun setStake(value: Float) {
+        stake = Stake(value)
+    }
+
+    override fun getMin() = min
+
+    override fun getMax() = max
+}
+
+class SuccessfullyPlacedResultDummy : SuccessfullyPlacedResult {
+    override fun getStatus() = PlaceBetStatus.OK
+
+    override fun getBetIdForPrint() = "BetIdForPrint"
+}
+
+class SingleTicketDummy : SingleTicket {
+    override fun setStake(selectionRef: SelectionRef, stake: Stake): Boolean {
+        lg("setStake: selectionRef: $selectionRef stake: $stake")
+        return true
+    }
+
+    override fun getBets(): List<Bet> = listOf(BetDummy(listOf(Choice(SelectionRef(12, "Result.2"), Coeffiicient(1000, Fraction(2, 1)))), BetType.SINGLE, Stake(0f), Stake(1f), Stake(10f)))
+
+    override fun place(): PlaceBetResult = SuccessfullyPlacedResultDummy()
+}
+
 class BetslipModelCommonImpl : BetslipModel {
     suspend fun addChoice(choice: Choice): Boolean {
-        lg("addChoice: start remote call")
+        lg("addChoice: choice: $choice delay 100")
         delay(100)
-        lg("addChoice: finish remote call")
+        lg("addChoice: choice: $choice finish")
         return true
     }
 
     suspend fun removeChoice(selectionRef: SelectionRef): Boolean {
-        lg("removeChoice: start remote call")
+        lg("removeChoice: selectionRef: $selectionRef delay 100")
         delay(100)
-        lg("removeChoice: finish remote call")
+        lg("removeChoice: selectionRef: $selectionRef finish")
         return true
     }
-
-    override fun getTicket(mode: BetslipMode): Ticket {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAvailableModes(): List<BetslipMode> = listOf(BetslipMode.SINGLES, BetslipMode.ACCUMULATORS)
-
-    override fun removeAllChoices() {}
 }
