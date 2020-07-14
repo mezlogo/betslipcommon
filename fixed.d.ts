@@ -1,6 +1,4 @@
     export namespace betslipcommon {
-        /* ErrorDeclaration: Class betslipcommon.BetType with kind: ENUM_CLASS */
-        /* ErrorDeclaration: Class betslipcommon.BetslipMode with kind: ENUM_CLASS */
         class Fraction {
             constructor(numerator: kotlin.Long, denumerator: kotlin.Long)
             readonly numerator: kotlin.Long;
@@ -62,14 +60,12 @@
             getMin(): betslipcommon.Stake
             getMax(): betslipcommon.Stake
         }
-        /* ErrorDeclaration: Class betslipcommon.PlaceBetStatus with kind: ENUM_CLASS */
         interface PlaceBetResult {
             getStatus(): any /*Class betslipcommon.PlaceBetStatus with kind: ENUM_CLASS*/
         }
         interface SuccessfullyPlacedResult extends betslipcommon.PlaceBetResult {
             getBetIdForPrint(): string
         }
-        /* ErrorDeclaration: Class betslipcommon.ErrorType with kind: ENUM_CLASS */
         interface ErrorResult extends betslipcommon.PlaceBetResult {
             getErrorType(): any /*Class betslipcommon.ErrorType with kind: ENUM_CLASS*/
             getErrorMsg(): string
@@ -91,25 +87,6 @@
             getAvailableModes(): kotlin.collections.List<any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/>
             removeAllChoices(): void
         }
-        function BetType_SINGLE_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_ANTIEXPRESS_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_DOUBLE_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_DOUBLES_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_TREBLE_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_ACCUMULATOR_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_PATENT_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetType_TRIXIE_getInstance(): any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/
-        function BetslipMode_SINGLES_getInstance(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
-        function BetslipMode_ACCUMULATORS_getInstance(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
-        function BetslipMode_ANTIEXPRESSES_getInstance(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
-        function BetslipMode_MULTIPLES_getInstance(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
-        function PlaceBetStatus_OK_getInstance(): any /*Class betslipcommon.PlaceBetStatus with kind: ENUM_CLASS*/
-        function PlaceBetStatus_LIVE_DELAY_getInstance(): any /*Class betslipcommon.PlaceBetStatus with kind: ENUM_CLASS*/
-        function PlaceBetStatus_ERROR_getInstance(): any /*Class betslipcommon.PlaceBetStatus with kind: ENUM_CLASS*/
-        function ErrorType_NOT_ENOUGH_MONEY_getInstance(): any /*Class betslipcommon.ErrorType with kind: ENUM_CLASS*/
-        function ErrorType_BAD_PUNTER_getInstance(): any /*Class betslipcommon.ErrorType with kind: ENUM_CLASS*/
-        function ErrorType_TERMS_HAS_CHANGED_getInstance(): any /*Class betslipcommon.ErrorType with kind: ENUM_CLASS*/
-        function ErrorType_GENERAL_ERROR_getInstance(): any /*Class betslipcommon.ErrorType with kind: ENUM_CLASS*/
     }
     export namespace betslipcommon {
         class BetslipModelJs implements betslipcommon.BetslipModel {

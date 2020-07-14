@@ -61,16 +61,40 @@ export class Betslip {
         }
     }
     
-    async onAddChoice(choice: Choice) {
+
+    private isSelectionRefsEqual(left: betslipcommon.SelectionRef, right: betslipcommon.SelectionRef): boolean {
+        return left.eventId === right.eventId && left.selectionUid === right.selectionUid;
+    }
+
+    async onAddChoice(choice: Choice): Promise<boolean> {
         const commonChoice = toCommonChoice(choice);
         lg(`addChoice: commonChoice: ${commonChoice.toString()}`);
         const result = await this.bsc.addChoice(commonChoice);
         lg(`addChoice: after await result: ${result}`);
         this.render();
+        return result;
     }
 
-    async onSetStakeSingles(stake: number, selRef: SelectionRef) {
-        
+    onSetStakeSingles(stake: number, selRef: SelectionRef): boolean {
+        const mode = this.bsc.getCurrentMode();
+
+        if ("SINGLES" !== mode.toString()) {
+            return false;
+        }
+
+        const ticket = this.bsc.getTicket(mode) as betslipcommon.SingleTicket;
+
+        const commonSelRef = new betslipcommon.SelectionRef(selRef.eventId, selRef.selUid);
+
+        const bet = ticket.getBets().toArray()
+            .find((bet: betslipcommon.Bet) => this.isSelectionRefsEqual(bet.getChoices().toArray()[0].selectionRef, commonSelRef));
+
+        if (undefined === bet) {
+            return false;
+        }
+
+        bet.setStake(stake);
+        return true;
     }
 }
 

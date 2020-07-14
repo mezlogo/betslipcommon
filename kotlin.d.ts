@@ -1,3 +1,4 @@
+export type Nullable<T> = T | null | undefined
 export namespace kotlin {
     type Long = number
     namespace collections {

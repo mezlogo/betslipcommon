@@ -4,6 +4,12 @@ import kotlinx.coroutines.delay
 
 private fun lg(msg: String) = println("kmp: $msg")
 
+enum class BetType { SINGLE, ANTIEXPRESS, DOUBLE, DOUBLES, TREBLE, ACCUMULATOR, PATENT, TRIXIE }
+enum class BetslipMode { SINGLES, ACCUMULATORS, ANTIEXPRESSES, MULTIPLES }
+
+enum class ErrorType { NOT_ENOUGH_MONEY, BAD_PUNTER, TERMS_HAS_CHANGED, GENERAL_ERROR }
+enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR }
+
 class BetDummy(private val choices: List<Choice>,
                private val betType: BetType,
                private var stake: Stake,

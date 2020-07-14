@@ -5,8 +5,6 @@ package betslipcommon
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
-enum class BetType { SINGLE, ANTIEXPRESS, DOUBLE, DOUBLES, TREBLE, ACCUMULATOR, PATENT, TRIXIE }
-enum class BetslipMode { SINGLES, ACCUMULATORS, ANTIEXPRESSES, MULTIPLES }
 data class Fraction(val numerator: Long, val denumerator: Long)
 data class SelectionRef(val eventId: Long, val selectionUid: String)
 data class Coeffiicient(val coeffId: Long, val value: Fraction)
@@ -26,12 +24,10 @@ interface Bet {
     fun getMax(): Stake
 }
 
-enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR }
 interface PlaceBetResult { fun getStatus(): PlaceBetStatus }
 
 interface SuccessfullyPlacedResult: PlaceBetResult { fun getBetIdForPrint(): String }
 
-enum class ErrorType { NOT_ENOUGH_MONEY, BAD_PUNTER, TERMS_HAS_CHANGED, GENERAL_ERROR }
 interface ErrorResult: PlaceBetResult { fun getErrorType(): ErrorType; fun getErrorMsg(): String }
 
 interface Ticket {
