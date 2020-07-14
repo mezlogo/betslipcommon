@@ -16,9 +16,11 @@ data class Stake(val value: Float)
 interface Bet {
     @JsName("getChoices")
     fun getChoices(): List<Choice>
+    @JsName("getBetType")
     fun getBetType(): BetType
     @JsName("getStake")
     fun getStake(): Stake
+    @JsName("setStake")
     fun setStake(value: Float)
     fun getMin(): Stake
     fun getMax(): Stake

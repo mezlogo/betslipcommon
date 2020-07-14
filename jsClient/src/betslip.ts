@@ -38,6 +38,15 @@ export class Betslip {
         this.bsc = bsc;
     }
 
+    private renderChoice(choice: betslipcommon.Choice) {
+        return `eventId: ${choice.selectionRef.eventId} selUid: ${choice.selectionRef.selectionUid}`;
+    }
+
+    private renderSingleBet(bet: betslipcommon.Bet) {
+        const renderedChoice = this.renderChoice(bet.getChoices().toArray()[0])
+        return `type: ${bet.getBetType()} stake: ${bet.getStake()} choice: ${renderedChoice}`;
+    }
+
     private render() {
         const modes = this.bsc.getAvailableModes().toArray();
         if (0 == modes.length) {
@@ -46,15 +55,7 @@ export class Betslip {
             const currentMode = this.bsc.getCurrentMode();
             const ticket = this.bsc.getTicket(currentMode);
 
-            let renderedTicket = "";
-
-            if ("SINGLES" === currentMode.toString()) {
-                const singlesTicket = ticket as betslipcommon.SingleTicket;
-                renderedTicket = `singlesTicket: choices: ${singlesTicket.getChoices().toArray()} bets: ${singlesTicket.getBets().toArray()}`;
-            } else {
-                const complexTicket = ticket as betslipcommon.ComplexTicket;
-                renderedTicket = `complexTicket: choices: ${complexTicket.getChoices().toArray()} bets: ${complexTicket.getBets().toArray()}`;
-            }
+            let renderedTicket = ticket.getBets().toArray().map((bet: betslipcommon.Bet) => this.renderSingleBet(bet)).join(", ");
 
             lg(`Render betslip current mode: ${currentMode} available modes: ${modes} ticket: ${renderedTicket}`);
         }
