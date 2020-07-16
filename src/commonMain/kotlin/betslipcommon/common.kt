@@ -10,48 +10,19 @@ enum class BetslipMode { SINGLES, ACCUMULATORS, ANTIEXPRESSES, MULTIPLES }
 enum class ErrorType { NOT_ENOUGH_MONEY, BAD_PUNTER, TERMS_HAS_CHANGED, GENERAL_ERROR }
 enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR }
 
-class BetDummy(private val choices: List<Choice>,
-               private val betType: BetType,
-               private var stake: Stake,
-               private var min: Stake,
-               private var max: Stake) : Bet {
-    override fun getChoices() = choices
-
-    override fun getBetType() = betType
-
-    override fun getStake() = stake
-
-    override fun setStake(value: Float) {
-        stake = Stake(value)
-    }
-
-    override fun getMin() = min
-
-    override fun getMax() = max
-}
-
-class SuccessfullyPlacedResultDummy : SuccessfullyPlacedResult {
-    override fun getStatus() = PlaceBetStatus.OK
-
-    override fun getBetIdForPrint() = "BetIdForPrint"
-}
-
-class SingleTicketDummy : SingleTicket {
-    override fun setStake(selectionRef: SelectionRef, stake: Stake): Boolean {
-        lg("setStake: selectionRef: $selectionRef stake: $stake")
-        return true
-    }
-
-    override fun getBets(): List<Bet> = listOf(BetDummy(listOf(Choice(SelectionRef(12, "Result.2"), Coeffiicient(1000, Fraction(2, 1)))), BetType.SINGLE, Stake(0f), Stake(1f), Stake(10f)))
-
-    override fun place(): PlaceBetResult = SuccessfullyPlacedResultDummy()
-}
-
-class BetslipModelCommonImpl : BetslipModel {
+class BetslipModelCommonImpl(val betslipStorageAo: BetslipStorageAo) : BetslipModel {
     suspend fun addChoice(choice: Choice): Boolean {
+        val choices = betslipStorageAo.getChoices()
+        if (null != choices.find { it.selectionRef == choice.selectionRef }) {
+            lg("addChoice: choice: $choice: this selectionRef is already added")
+            return false
+        }
         lg("addChoice: choice: $choice delay 100")
         delay(100)
         lg("addChoice: choice: $choice finish")
+
+        val array = Array(choices.size + 1) { if (it < choices.size) choices[it] else choice }
+        betslipStorageAo.saveChoices(array)
         return true
     }
 
@@ -61,4 +32,32 @@ class BetslipModelCommonImpl : BetslipModel {
         lg("removeChoice: selectionRef: $selectionRef finish")
         return true
     }
+
+    override fun getTicket(mode: BetslipMode): Ticket {
+        val choices = betslipStorageAo.getChoices()
+        val singleBets = choices.map { MySingleBet(it, Stake(.0f)) }
+        return MySinglesTicket(singleBets)
+    }
+}
+
+class MySingleBet(val choice: Choice, private var stake: Stake): Bet {
+    override fun getChoices() = listOf(choice)
+
+    override fun getBetType() = BetType.SINGLE
+
+    override fun getStake() = stake
+
+    override fun setStake(value: Float) { stake = Stake(value) }
+
+    override fun getMin() = Stake(0.1f)
+
+    override fun getMax() = Stake(50.0f)
+}
+
+data class MySinglesTicket(private val bets: List<Bet>): SingleTicket {
+    override fun setStake(selectionRef: SelectionRef, stake: Stake) = true
+
+    override fun getBets() = bets
+
+    override fun place(): PlaceBetResult { throw RuntimeException("UNSUPPORTED") }
 }

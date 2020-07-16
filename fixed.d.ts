@@ -87,10 +87,16 @@
             getAvailableModes(): kotlin.collections.List<any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/>
             removeAllChoices(): void
         }
+        interface BetslipStorageAo {
+            getChoices(): Array<betslipcommon.Choice>
+            saveChoices(choices: Array<betslipcommon.Choice>): void
+        }
     }
     export namespace betslipcommon {
+        function createBetslipModelForDelegation(betslipStorageAo: betslipcommon.BetslipStorageAo): betslipcommon.BetslipModelCommonImpl
         class BetslipModelJs implements betslipcommon.BetslipModel {
-            constructor()
+            constructor(delegateTo: betslipcommon.BetslipModelCommonImpl)
+            readonly delegateTo: betslipcommon.BetslipModelCommonImpl;
             getAvailableModes(): kotlin.collections.List<any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/>
             getCurrentMode(): any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/
             getTicket(mode: any /*Class betslipcommon.BetslipMode with kind: ENUM_CLASS*/): betslipcommon.Ticket

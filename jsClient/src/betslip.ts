@@ -98,7 +98,20 @@ export class Betslip {
     }
 }
 
+class MyJsonStorage implements betslipcommon.BetslipStorageAo {
+    private choices: Array<betslipcommon.Choice> = [];
+
+    getChoices(): betslipcommon.Choice[] {
+        return this.choices;
+    }
+    saveChoices(choices: betslipcommon.Choice[]): void {
+        this.choices = choices;
+    }
+}
+
 export function initApp(): Betslip {
-    const bsc = new betslipcommon.BetslipModelJs();
+    const myJsonStorage = new MyJsonStorage();
+    const delegateTo = betslipcommon.createBetslipModelForDelegation(myJsonStorage);
+    const bsc = new betslipcommon.BetslipModelJs(delegateTo);
     return new Betslip(bsc);
 }

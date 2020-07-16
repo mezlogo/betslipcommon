@@ -4,8 +4,9 @@ main();
 
 async function main() {
     const selRef = new SelectionRef(12, "Result.2");
+    const cfId = 10;
     const bs = initApp();
-    const ch = new Choice(selRef.eventId, selRef.selUid, 10);
+    const ch = new Choice(selRef.eventId, selRef.selUid, cfId);
     
     const addStatus = await bs.onAddChoice(ch);
     if (!addStatus) {

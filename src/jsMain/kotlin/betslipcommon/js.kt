@@ -3,13 +3,14 @@ package betslipcommon
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 
-private val betslipModel = BetslipModelCommonImpl()
+@JsExport
+fun createBetslipModelForDelegation(betslipStorageAo: BetslipStorageAo) = BetslipModelCommonImpl(betslipStorageAo)
 
 @JsExport
-class BetslipModelJs : BetslipModel by betslipModel {
+class BetslipModelJs(val delegateTo: BetslipModelCommonImpl) : BetslipModel by delegateTo {
     @JsName("addChoice")
-    fun addChoice(choice: Choice) = GlobalScope.promise { betslipModel.addChoice(choice) }
+    fun addChoice(choice: Choice) = GlobalScope.promise { delegateTo.addChoice(choice) }
 
     @JsName("removeChoice")
-    fun removeChoice(selectionRef: SelectionRef) = GlobalScope.promise { betslipModel.removeChoice(selectionRef) }
+    fun removeChoice(selectionRef: SelectionRef) = GlobalScope.promise { delegateTo.removeChoice(selectionRef) }
 }

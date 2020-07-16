@@ -56,11 +56,18 @@ interface BetslipModel {
     fun getCurrentMode(): BetslipMode = BetslipMode.SINGLES
 
     @JsName("getTicket")
-    fun getTicket(mode: BetslipMode): Ticket = SingleTicketDummy()
+    fun getTicket(mode: BetslipMode): Ticket
 
     @JsName("getAvailableModes")
     fun getAvailableModes(): List<BetslipMode> = listOf(BetslipMode.SINGLES)
 
     @JsName("removeAllChoices")
     fun removeAllChoices() {}
+}
+
+interface BetslipStorageAo {
+    @JsName("getChoices")
+    fun getChoices(): Array<Choice>
+    @JsName("saveChoices")
+    fun saveChoices(choices: Array<Choice>)
 }
