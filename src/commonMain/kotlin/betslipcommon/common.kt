@@ -10,7 +10,11 @@ enum class BetslipMode { SINGLES, ACCUMULATORS, ANTIEXPRESSES, MULTIPLES }
 enum class ErrorType { NOT_ENOUGH_MONEY, BAD_PUNTER, TERMS_HAS_CHANGED, GENERAL_ERROR }
 enum class PlaceBetStatus { OK, LIVE_DELAY, ERROR }
 
-class BetslipModelCommonImpl(val betslipStorageAo: BetslipStorageAo) : BetslipModel {
+interface BetslipServiceAOCoroutines {
+    suspend fun requestAvailableBetsForChoices(choices: List<Choice>): List<BetType>
+}
+
+class BetslipModelCommonImpl(val betslipStorageAo: BetslipStorageAo, val betslipServiceAO: BetslipServiceAOCoroutines) : BetslipModel {
     suspend fun addChoice(choice: Choice): Boolean {
         val choices = betslipStorageAo.getChoices()
         if (null != choices.find { it.selectionRef == choice.selectionRef }) {
@@ -18,11 +22,12 @@ class BetslipModelCommonImpl(val betslipStorageAo: BetslipStorageAo) : BetslipMo
             return false
         }
         lg("addChoice: choice: $choice delay 100")
-        delay(100)
         lg("addChoice: choice: $choice finish")
 
-        val array = Array(choices.size + 1) { if (it < choices.size) choices[it] else choice }
-        betslipStorageAo.saveChoices(array)
+        val modifiedChoices = Array(choices.size + 1) { if (it < choices.size) choices[it] else choice }
+        betslipStorageAo.saveChoices(modifiedChoices)
+
+        val availableBetTypes = betslipServiceAO.requestAvailableBetsForChoices(modifiedChoices.toList())
         return true
     }
 

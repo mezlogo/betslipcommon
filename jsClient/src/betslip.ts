@@ -1,4 +1,4 @@
-import { betslipcommon } from 'betslipcommon';
+import { betslipcommon, kotlin } from 'betslipcommon';
 
 function lg(msg: string) { console.log(`js: ${msg}`); }
 
@@ -109,9 +109,21 @@ class MyJsonStorage implements betslipcommon.BetslipStorageAo {
     }
 }
 
+function sleepJobFor(ms: number) { return new Promise(res => setTimeout(res, ms)); }
+
+class MyService implements betslipcommon.BetslipServiceAOPromises {
+    async requestAvailableBetsForChoices(choices: kotlin.collections.List<betslipcommon.Choice>) {
+        lg("requestAvailableBetsForChoices: before timeout 1000 choices.length: " + choices.toArray().length);
+        await sleepJobFor(1000)
+        lg("requestAvailableBetsForChoices: after timeout 1000 choices.length: " + choices.toArray().length);
+        return betslipcommon.toList([]);
+    }
+}
+
 export function initApp(): Betslip {
     const myJsonStorage = new MyJsonStorage();
-    const delegateTo = betslipcommon.createBetslipModelForDelegation(myJsonStorage);
+    const myService = new MyService();
+    const delegateTo = betslipcommon.createBetslipModelForDelegation(myJsonStorage, myService);
     const bsc = new betslipcommon.BetslipModelJs(delegateTo);
     return new Betslip(bsc);
 }

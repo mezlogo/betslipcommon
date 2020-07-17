@@ -93,7 +93,11 @@
         }
     }
     export namespace betslipcommon {
-        function createBetslipModelForDelegation(betslipStorageAo: betslipcommon.BetslipStorageAo): betslipcommon.BetslipModelCommonImpl
+        function toList<T>(array: Array<T>): kotlin.collections.List<T>
+        interface BetslipServiceAOPromises {
+            requestAvailableBetsForChoices(choices: kotlin.collections.List<betslipcommon.Choice>): kotlin.js.Promise<kotlin.collections.List<any /*Class betslipcommon.BetType with kind: ENUM_CLASS*/>>
+        }
+        function createBetslipModelForDelegation(betslipStorageAo: betslipcommon.BetslipStorageAo, betslipServiceAo: betslipcommon.BetslipServiceAOPromises): betslipcommon.BetslipModelCommonImpl
         class BetslipModelJs implements betslipcommon.BetslipModel {
             constructor(delegateTo: betslipcommon.BetslipModelCommonImpl)
             readonly delegateTo: betslipcommon.BetslipModelCommonImpl;
